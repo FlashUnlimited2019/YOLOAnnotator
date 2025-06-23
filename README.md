@@ -94,7 +94,7 @@ python auto_annotate.py \
   --input-dir ./photos/ \
   --output-dir ./my_yolo_data/ \
   --vis-dir ./vis/ \
-  --token "xxxxx"
+  --token "YOUR_API_TOKEN"
 ```
 
 ---
