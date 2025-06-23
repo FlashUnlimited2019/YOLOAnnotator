@@ -133,20 +133,18 @@ def run_detection(client, image_path, prompt, model, api_path, bbox_thr, iou_thr
     return task.result.get('objects', [])
 
 
-def convert_to_yolo_format(detections, img_w, img_h, default_thresh, category_thresholds):
-    """
-    Convert detection results to YOLO format lines.
-    Filters out objects below their category-specific threshold or not in the class list.
-    """
+def convert_to_yolo_format(detections, img_w, img_h,
+                           default_thresh, category_thresholds,
+                           class_to_idx):
     lines = []
     for obj in detections:
         score = obj.get('score', obj.get('confidence', 0))
         raw   = obj.get('category') or obj.get('text', '')
-        label = normalize_label(raw)                # ← 归一化
+        label = normalize_label(raw)
         thr   = category_thresholds.get(label, default_thresh)
-        if score < thr or label not in CLASS_TO_IDX:
+        if score < thr or label not in class_to_idx:
             continue
-        cls_id = CLASS_TO_IDX[label]
+        cls_id = class_to_idx[label]
         x0, y0, x1, y1 = obj['bbox']
         cx = ((x0 + x1) / 2) / img_w
         cy = ((y0 + y1) / 2) / img_h
@@ -205,6 +203,14 @@ def main():
 
     prompt_text = args.prompt or '. '.join(CATEGORIES) + '.'
 
+    # Generate deduplicated, normalized class names list
+    names = []
+    for cat in CATEGORIES:
+        norm = normalize_label(cat)
+        if norm not in names:
+            names.append(norm)
+    class_to_idx = {label: idx for idx, label in enumerate(names)}
+
     # Prepare color palette for visualization
     random.seed(42)
     palette = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(20)]
@@ -236,7 +242,8 @@ def main():
         yolo_lines = convert_to_yolo_format(
             detections, w, h,
             args.bbox_threshold,
-            CATEGORY_THRESHOLDS
+            CATEGORY_THRESHOLDS,
+            class_to_idx
         )
         with open(label_path, 'w') as f:
             f.write('\n'.join(yolo_lines))
@@ -249,13 +256,6 @@ def main():
                 CATEGORY_THRESHOLDS,
                 palette, color_map, font
             )
-
-    # Generate deduplicated, normalized class names list
-    names = []
-    for cat in CATEGORIES:
-        norm = normalize_label(cat)
-        if norm not in names:
-            names.append(norm)
 
     # Write data.yaml
     data = {
