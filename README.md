@@ -2,8 +2,10 @@
 
 A lightweight Python tool to:
 
+> **Powered by [DeepDataSpace Cloud API](https://cloud.deepdataspace.com/docs) — you can try GroundingDINO online at their [Playground](https://cloud.deepdataspace.com/playground/grounding_dino).**
+
 1. **Normalize & rename** your raw images into a consistent `pic_000001.jpg` format.
-2. **Batch-infer** object detections with the GroundingDINO-1.6-Pro API.
+2. **Batch-infer** object detections using the [GroundingDINO-1.6-Pro API](https://cloud.deepdataspace.com/docs).
 3. **Export YOLO-formatted labels** (`.txt`) under `train/labels/`.
 4. **Generate a `data.yaml`** file for your YOLO training setup.
 5. **(Optional) Produce visualizations** with colored bounding-boxes, class labels & confidences.
